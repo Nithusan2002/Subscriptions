@@ -10,7 +10,6 @@ import UserNotifications
 
 struct SettingsView: View {
     @EnvironmentObject var store: SubscriptionStore
-    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
@@ -37,13 +36,17 @@ struct SettingsView: View {
                     }
                     .disabled(!store.notificationsEnabled)
                 }
-            }
-            .navigationTitle("Innstillinger")
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Ferdig") { dismiss() }
+
+                Section("Mer") {
+                    NavigationLink("Eksporter") {
+                        ExportView()
+                    }
+                    NavigationLink("Om") {
+                        AboutView()
+                    }
                 }
             }
+            .navigationTitle("Innstillinger")
         }
     }
 

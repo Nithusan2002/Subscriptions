@@ -12,7 +12,6 @@ struct HomeView: View {
 
     @State private var isPresentingAdd = false
     @State private var selectedSubscription: Subscription? = nil
-    @State private var activeSheet: HomeSheet? = nil
     @AppStorage("didShowNotificationPrompt") private var didShowNotificationPrompt = false
 
     var body: some View {
@@ -42,15 +41,6 @@ struct HomeView: View {
                         Image(systemName: "plus")
                     }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Button("Innstillinger") { activeSheet = .settings }
-                        Button("Eksporter") { activeSheet = .export }
-                        Button("Om") { activeSheet = .about }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                    }
-                }
             }
             .sheet(isPresented: $isPresentingAdd) {
                 AddSubscriptionView()
@@ -59,17 +49,6 @@ struct HomeView: View {
             .sheet(item: $selectedSubscription) { subscription in
                 EditSubscriptionView(subscription: subscription)
                     .environmentObject(store)
-            }
-            .sheet(item: $activeSheet) { sheet in
-                switch sheet {
-                case .about:
-                    AboutView()
-                case .settings:
-                    SettingsView()
-                        .environmentObject(store)
-                case .export:
-                    InfoSheetView(title: sheet.title, message: sheet.message)
-                }
             }
         }
     }
@@ -108,36 +87,6 @@ struct HomeView: View {
         Task {
             _ = await store.requestNotificationPermission()
             didShowNotificationPrompt = true
-        }
-    }
-}
-
-private enum HomeSheet: String, Identifiable {
-    case settings
-    case export
-    case about
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .settings:
-            return "Innstillinger"
-        case .export:
-            return "Eksporter"
-        case .about:
-            return "Om"
-        }
-    }
-
-    var message: String {
-        switch self {
-        case .settings:
-            return "Kommer snart. Vi holder dette enkelt og rolig i MVP."
-        case .export:
-            return "Kommer snart. Eksport er planlagt, men ikke i MVP."
-        case .about:
-            return "En rolig oversikt over abonnementene dine, helt lokalt.\nKontroll, oversikt og ro."
         }
     }
 }
