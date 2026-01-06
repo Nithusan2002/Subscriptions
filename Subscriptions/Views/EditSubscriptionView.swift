@@ -11,7 +11,7 @@ struct EditSubscriptionView: View {
     @EnvironmentObject var store: SubscriptionStore
     @Environment(\.dismiss) private var dismiss
 
-    @State private var price: Double
+    @State private var priceText: String
     @State private var nextChargeDate: Date
     @State private var selectedName: String?
     @State private var customName: String
@@ -25,7 +25,7 @@ struct EditSubscriptionView: View {
 
     init(subscription: Subscription) {
         subscriptionID = subscription.id
-        _price = State(initialValue: NSDecimalNumber(decimal: subscription.priceNOK).doubleValue)
+        _priceText = State(initialValue: Formatters.nokString(subscription.priceNOK))
         _nextChargeDate = State(initialValue: subscription.nextChargeDate)
         if let name = subscription.name, nameOptions.contains(name) {
             _selectedName = State(initialValue: name)
@@ -61,13 +61,14 @@ struct EditSubscriptionView: View {
                         saveSubscription()
                         dismiss()
                     }
-                    .disabled(price <= 0)
+                    .disabled((parsedPrice ?? 0) <= 0)
                 }
             }
         }
     }
 
     private func saveSubscription() {
+        guard let price = parsedPrice, price > 0 else { return }
         let trimmedCustomName = customName.trimmingCharacters(in: .whitespacesAndNewlines)
         let resolvedName: String?
         if selectedName == "Annet" {
@@ -85,7 +86,7 @@ struct EditSubscriptionView: View {
             id: existing.id,
             name: resolvedName,
             note: trimmedNote.isEmpty ? nil : trimmedNote,
-            priceNOK: Decimal(price),
+            priceNOK: price,
             nextChargeDate: nextChargeDate,
             isActive: isActive,
             createdAt: existing.createdAt,
@@ -107,11 +108,14 @@ struct EditSubscriptionView: View {
             HStack {
                 Text("Pris per måned")
                 Spacer()
-                TextField("0", value: $price, format: .number.precision(.fractionLength(0)))
-                    .keyboardType(.decimalPad)
+                TextField("0", text: $priceText)
+                    .keyboardType(.numberPad)
                     .multilineTextAlignment(.trailing)
                 Text("kr")
                     .foregroundStyle(DesignTokens.subtleText)
+            }
+            .onChange(of: priceText) { _, newValue in
+                priceText = formattedDigits(from: newValue)
             }
 
             DatePicker("Neste trekkdato", selection: $nextChargeDate, displayedComponents: .date)
@@ -166,6 +170,19 @@ struct EditSubscriptionView: View {
                 set: { isActive = !$0 }
             ))
         }
+    }
+
+    private var parsedPrice: Decimal? {
+        let digits = priceText.replacingOccurrences(of: " ", with: "")
+        guard !digits.isEmpty else { return nil }
+        return Decimal(string: digits)
+    }
+
+    private func formattedDigits(from input: String) -> String {
+        let digits = input.filter { $0.isNumber }
+        guard !digits.isEmpty else { return "" }
+        let number = NSDecimalNumber(string: digits)
+        return Formatters.nokNumber.string(from: number) ?? digits
     }
 }
 
