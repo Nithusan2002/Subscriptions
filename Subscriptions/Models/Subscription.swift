@@ -56,3 +56,9 @@ struct Subscription: Identifiable, Codable, Equatable {
 enum BillingCycle: String, Codable {
     case monthly
 }
+
+struct MonthlySnapshot: Codable, Equatable {
+    var year: Int
+    var month: Int
+    var totalPerMonth: Decimal
+}

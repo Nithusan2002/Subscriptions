@@ -34,6 +34,7 @@ final class SubscriptionStore: ObservableObject {
 
     private let storageURL: URL
     private let notificationCenter = UNUserNotificationCenter.current()
+    private var monthlySnapshots: [MonthlySnapshot] = []
 
     init() {
         let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
@@ -42,6 +43,7 @@ final class SubscriptionStore: ObservableObject {
         self.notificationsEnabled = storedEnabled ?? true
         let storedOffset = UserDefaults.standard.object(forKey: DefaultsKey.defaultReminderOffsetDays) as? Int
         self.defaultReminderOffsetDays = storedOffset ?? 1
+        loadMonthlySnapshots()
         load()
         Task {
             await refreshAuthorizationStatus()
@@ -77,13 +79,18 @@ final class SubscriptionStore: ObservableObject {
     }
 
     func add(_ subscription: Subscription) {
+        let previousTotal = totalPerMonth
         subscriptions.append(subscription)
         save()
         scheduleIfAllowed(for: subscription)
+        let currentTotal = totalPerMonth
+        updateMonthlySnapshot(total: currentTotal)
+        maybeShowMonthlyInsight(currentTotal: currentTotal, previousTotal: previousTotal)
     }
 
     func update(_ subscription: Subscription) {
         guard let index = subscriptions.firstIndex(where: { $0.id == subscription.id }) else { return }
+        let previousTotal = totalPerMonth
         let previous = subscriptions[index]
         var updated = subscription
         updated.updatedAt = Date()
@@ -95,6 +102,10 @@ final class SubscriptionStore: ObservableObject {
             let savings = Formatters.nokString(previous.priceNOK)
             showFeedback("Du sparer \(savings) kr/mnd 🎉")
         }
+
+        let currentTotal = totalPerMonth
+        updateMonthlySnapshot(total: currentTotal)
+        maybeShowMonthlyInsight(currentTotal: currentTotal, previousTotal: previousTotal)
     }
 
     func requestNotificationPermission() async -> Bool {
@@ -189,6 +200,62 @@ final class SubscriptionStore: ObservableObject {
         }
     }
 
+    private func updateMonthlySnapshot(total: Decimal) {
+        let components = Calendar.current.dateComponents([.year, .month], from: Date())
+        guard let year = components.year, let month = components.month else { return }
+        if let index = monthlySnapshots.firstIndex(where: { $0.year == year && $0.month == month }) {
+            monthlySnapshots[index].totalPerMonth = total
+        } else {
+            monthlySnapshots.append(MonthlySnapshot(year: year, month: month, totalPerMonth: total))
+        }
+        saveMonthlySnapshots()
+    }
+
+    private func maybeShowMonthlyInsight(currentTotal: Decimal, previousTotal: Decimal) {
+        guard currentTotal < previousTotal else { return }
+        guard let previousSnapshot = previousMonthSnapshot() else { return }
+        guard previousSnapshot.totalPerMonth > 0 else { return }
+        guard currentTotal < previousSnapshot.totalPerMonth else { return }
+
+        let percentage = 1 - (currentTotal / previousSnapshot.totalPerMonth)
+        let percentInt = Int((percentage * Decimal(100)).rounded())
+        guard percentInt > 0 else { return }
+
+        let monthKey = currentMonthKey()
+        let lastShown = UserDefaults.standard.string(forKey: DefaultsKey.lastMonthlyInsightShown)
+        guard lastShown != monthKey else { return }
+
+        showFeedback("Faste kostnader ↓ \(percentInt) % siden forrige måned")
+        UserDefaults.standard.set(monthKey, forKey: DefaultsKey.lastMonthlyInsightShown)
+    }
+
+    private func currentMonthKey() -> String {
+        let components = Calendar.current.dateComponents([.year, .month], from: Date())
+        let year = components.year ?? 0
+        let month = components.month ?? 0
+        return "\(year)-\(month)"
+    }
+
+    private func previousMonthSnapshot() -> MonthlySnapshot? {
+        guard let date = Calendar.current.date(byAdding: .month, value: -1, to: Date()) else { return nil }
+        let components = Calendar.current.dateComponents([.year, .month], from: date)
+        guard let year = components.year, let month = components.month else { return nil }
+        return monthlySnapshots.first(where: { $0.year == year && $0.month == month })
+    }
+
+    private func loadMonthlySnapshots() {
+        guard let data = UserDefaults.standard.data(forKey: DefaultsKey.monthlySnapshots) else { return }
+        if let decoded = try? JSONDecoder().decode([MonthlySnapshot].self, from: data) {
+            monthlySnapshots = decoded
+        }
+    }
+
+    private func saveMonthlySnapshots() {
+        if let data = try? JSONEncoder().encode(monthlySnapshots) {
+            UserDefaults.standard.set(data, forKey: DefaultsKey.monthlySnapshots)
+        }
+    }
+
     private func showFeedback(_ message: String) {
         feedbackMessage = message
         Task { @MainActor in
@@ -203,4 +270,6 @@ final class SubscriptionStore: ObservableObject {
 private enum DefaultsKey {
     static let notificationsEnabled = "notificationsEnabled"
     static let defaultReminderOffsetDays = "defaultReminderOffsetDays"
+    static let monthlySnapshots = "monthlySnapshots"
+    static let lastMonthlyInsightShown = "lastMonthlyInsightShown"
 }
