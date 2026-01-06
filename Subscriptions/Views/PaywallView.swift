@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import StoreKit
 
 struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
@@ -55,7 +56,19 @@ struct PaywallView: View {
                     }
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(isPurchasing)
+                .disabled(isPurchasing || !selectedProductAvailable)
+
+                if !selectedProductAvailable {
+                    Text("Fant ikke produkt i StoreKit. Sjekk StoreKit Configuration.")
+                        .font(DesignTokens.captionFont)
+                        .foregroundStyle(DesignTokens.subtleText)
+                        .multilineTextAlignment(.center)
+                } else if let error = storeKit.lastError {
+                    Text(error)
+                        .font(DesignTokens.captionFont)
+                        .foregroundStyle(DesignTokens.subtleText)
+                        .multilineTextAlignment(.center)
+                }
 
                 Text("Kjøp administreres via App Store.")
                     .font(DesignTokens.captionFont)
@@ -110,6 +123,15 @@ struct PaywallView: View {
             }
         }
         return false
+    }
+
+    private var selectedProductAvailable: Bool {
+        switch plan {
+        case .monthly:
+            return storeKit.monthlyProduct != nil
+        case .yearly:
+            return storeKit.yearlyProduct != nil
+        }
     }
 }
 

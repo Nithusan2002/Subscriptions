@@ -7,6 +7,7 @@
 
 import Foundation
 import StoreKit
+import Combine
 
 @MainActor
 final class StoreKitManager: ObservableObject {
@@ -20,7 +21,9 @@ final class StoreKitManager: ObservableObject {
     private var updatesTask: Task<Void, Never>? = nil
 
     init() {
-        updatesTask = listenForTransactions()
+        updatesTask = Task.detached { [weak self] in
+            await self?.listenForTransactions()
+        }
         Task {
             await refreshEntitlements()
             await loadProducts()
@@ -83,18 +86,13 @@ final class StoreKitManager: ObservableObject {
         updateProStatus(isPro)
     }
 
-    private func listenForTransactions() -> Task<Void, Never> {
-        Task.detached { [weak self] in
-            for await result in Transaction.updates {
-                guard let self = self else { continue }
-                if let transaction = try? self.verify(result) {
-                    if transaction.productID == Self.monthlyProductID || transaction.productID == Self.yearlyProductID {
-                        await MainActor.run {
-                            self.updateProStatus(true)
-                        }
-                    }
-                    await transaction.finish()
+    private func listenForTransactions() async {
+        for await result in Transaction.updates {
+            if let transaction = try? verify(result) {
+                if transaction.productID == Self.monthlyProductID || transaction.productID == Self.yearlyProductID {
+                    updateProStatus(true)
                 }
+                await transaction.finish()
             }
         }
     }
@@ -108,7 +106,11 @@ final class StoreKitManager: ObservableObject {
         case .verified(let safe):
             return safe
         case .unverified:
-            throw StoreKitError.failedVerification
+            throw StoreKitManagerError.failedVerification
         }
     }
+}
+
+enum StoreKitManagerError: Error {
+    case failedVerification
 }

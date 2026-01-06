@@ -7,7 +7,7 @@
 
 import Foundation
 import UserNotifications
-internal import Combine
+import Combine
 
 @MainActor
 final class SubscriptionStore: ObservableObject {
