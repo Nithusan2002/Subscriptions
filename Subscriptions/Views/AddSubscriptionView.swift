@@ -16,6 +16,7 @@ struct AddSubscriptionView: View {
     @State private var selectedName: String? = nil
     @State private var customName: String = ""
     @State private var note: String = ""
+    @State private var isPresentingPaywall = false
 
     private let nameOptions = ["Netflix", "Spotify", "HBO Max", "Apple One", "Strim", "Viaplay", "Annet"]
 
@@ -71,12 +72,19 @@ struct AddSubscriptionView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Lagre") {
-                        saveSubscription()
-                        dismiss()
+                        if store.freeLimitReached {
+                            isPresentingPaywall = true
+                        } else {
+                            saveSubscription()
+                            dismiss()
+                        }
                     }
                     .disabled((parsedPrice ?? 0) <= 0)
                 }
             }
+        }
+        .sheet(isPresented: $isPresentingPaywall) {
+            PaywallView()
         }
     }
 

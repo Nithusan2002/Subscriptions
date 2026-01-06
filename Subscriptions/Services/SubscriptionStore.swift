@@ -11,6 +11,8 @@ internal import Combine
 
 @MainActor
 final class SubscriptionStore: ObservableObject {
+    static let maxFreeSubscriptions = 3
+
     @Published private(set) var subscriptions: [Subscription] = []
     @Published private(set) var notificationAuthorizationStatus: UNAuthorizationStatus = .notDetermined
     @Published var notificationsEnabled: Bool {
@@ -55,6 +57,10 @@ final class SubscriptionStore: ObservableObject {
 
     var totalPerMonth: Decimal {
         activeSubscriptions.reduce(Decimal(0)) { $0 + $1.priceNOK }
+    }
+
+    var freeLimitReached: Bool {
+        activeSubscriptions.count >= Self.maxFreeSubscriptions
     }
 
     var annualEstimate: Decimal {
