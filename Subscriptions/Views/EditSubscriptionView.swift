@@ -85,7 +85,7 @@ struct EditSubscriptionView: View {
                     TextField("Notat (valgfritt)", text: $note)
                 }
 
-                Section("Varsler") {
+                Section("Varsler", footer: Text(footerText)) {
                     Toggle("Varsle om trekk", isOn: $notificationsEnabled)
                     if notificationsEnabled {
                         Picker("Tidspunkt", selection: $reminderOffsetDays) {
@@ -95,6 +95,7 @@ struct EditSubscriptionView: View {
                         }
                     }
                 }
+                .disabled(!store.notificationsEnabled)
 
                 Section {
                     Toggle("Avsluttet", isOn: Binding(
@@ -129,7 +130,7 @@ struct EditSubscriptionView: View {
         }
 
         let trimmedNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
-        let reminder = notificationsEnabled ? reminderOffsetDays : nil
+        let reminder = (store.notificationsEnabled && notificationsEnabled) ? reminderOffsetDays : nil
 
         guard let existing = store.subscription(with: subscriptionID) else { return }
 
@@ -148,6 +149,10 @@ struct EditSubscriptionView: View {
             lastNotifiedAt: existing.lastNotifiedAt
         )
         store.update(updated)
+    }
+
+    private var footerText: String {
+        store.notificationsEnabled ? "" : "Varsler er slått av i Innstillinger."
     }
 }
 

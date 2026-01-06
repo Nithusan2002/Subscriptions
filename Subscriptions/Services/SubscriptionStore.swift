@@ -13,6 +13,21 @@ internal import Combine
 final class SubscriptionStore: ObservableObject {
     @Published private(set) var subscriptions: [Subscription] = []
     @Published private(set) var notificationAuthorizationStatus: UNAuthorizationStatus = .notDetermined
+    @Published var notificationsEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(notificationsEnabled, forKey: DefaultsKey.notificationsEnabled)
+            if !notificationsEnabled {
+                notificationCenter.removeAllPendingNotificationRequests()
+            } else if hasNotificationAuthorization {
+                scheduleAll()
+            }
+        }
+    }
+    @Published var defaultReminderOffsetDays: Int {
+        didSet {
+            UserDefaults.standard.set(defaultReminderOffsetDays, forKey: DefaultsKey.defaultReminderOffsetDays)
+        }
+    }
 
     private let storageURL: URL
     private let notificationCenter = UNUserNotificationCenter.current()
@@ -20,6 +35,10 @@ final class SubscriptionStore: ObservableObject {
     init() {
         let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         self.storageURL = documents.appendingPathComponent("subscriptions.json")
+        let storedEnabled = UserDefaults.standard.object(forKey: DefaultsKey.notificationsEnabled) as? Bool
+        self.notificationsEnabled = storedEnabled ?? true
+        let storedOffset = UserDefaults.standard.object(forKey: DefaultsKey.defaultReminderOffsetDays) as? Int
+        self.defaultReminderOffsetDays = storedOffset ?? 1
         load()
         Task {
             await refreshAuthorizationStatus()
@@ -69,6 +88,7 @@ final class SubscriptionStore: ObservableObject {
         do {
             let granted = try await notificationCenter.requestAuthorization(options: [.alert, .sound])
             await refreshAuthorizationStatus()
+            notificationsEnabled = granted
             if granted {
                 scheduleAll()
             }
@@ -96,7 +116,7 @@ final class SubscriptionStore: ObservableObject {
     }
 
     private func scheduleIfAllowed(for subscription: Subscription) {
-        guard hasNotificationAuthorization else { return }
+        guard notificationsEnabled, hasNotificationAuthorization else { return }
         scheduleNotification(for: subscription)
     }
 
@@ -155,4 +175,9 @@ final class SubscriptionStore: ObservableObject {
             return
         }
     }
+}
+
+private enum DefaultsKey {
+    static let notificationsEnabled = "notificationsEnabled"
+    static let defaultReminderOffsetDays = "defaultReminderOffsetDays"
 }

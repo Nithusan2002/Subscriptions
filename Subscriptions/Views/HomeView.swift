@@ -64,7 +64,10 @@ struct HomeView: View {
                 switch sheet {
                 case .about:
                     AboutView()
-                case .settings, .export:
+                case .settings:
+                    SettingsView()
+                        .environmentObject(store)
+                case .export:
                     InfoSheetView(title: sheet.title, message: sheet.message)
                 }
             }
@@ -95,7 +98,10 @@ struct HomeView: View {
     }
 
     private var shouldShowNotificationPrompt: Bool {
-        !didShowNotificationPrompt && !store.hasNotificationAuthorization && !store.activeSubscriptions.isEmpty
+        !didShowNotificationPrompt
+        && store.notificationsEnabled
+        && !store.hasNotificationAuthorization
+        && !store.activeSubscriptions.isEmpty
     }
 
     private func requestNotifications() {

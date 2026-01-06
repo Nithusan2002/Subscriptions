@@ -87,12 +87,13 @@ struct AddSubscriptionView: View {
         }
 
         let trimmedNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        let reminder = store.notificationsEnabled ? store.defaultReminderOffsetDays : nil
         let subscription = Subscription(
             name: resolvedName,
             note: trimmedNote.isEmpty ? nil : trimmedNote,
             priceNOK: Decimal(price),
             nextChargeDate: nextChargeDate,
-            reminderOffsetDays: 1
+            reminderOffsetDays: reminder
         )
         store.add(subscription)
     }
