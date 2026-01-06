@@ -218,7 +218,8 @@ final class SubscriptionStore: ObservableObject {
         guard currentTotal < previousSnapshot.totalPerMonth else { return }
 
         let percentage = 1 - (currentTotal / previousSnapshot.totalPerMonth)
-        let percentInt = Int((percentage * Decimal(100)).rounded())
+        let percentNumber = NSDecimalNumber(decimal: percentage * Decimal(100)).rounding(accordingToBehavior: nil)
+        let percentInt = percentNumber.intValue
         guard percentInt > 0 else { return }
 
         let monthKey = currentMonthKey()
