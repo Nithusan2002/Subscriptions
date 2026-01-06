@@ -45,64 +45,11 @@ struct EditSubscriptionView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Obligatorisk") {
-                    HStack {
-                        Text("Pris per måned")
-                        Spacer()
-                        TextField("0", value: $price, format: .number.precision(.fractionLength(0)))
-                            .keyboardType(.decimalPad)
-                            .multilineTextAlignment(.trailing)
-                        Text("kr")
-                            .foregroundStyle(DesignTokens.subtleText)
-                    }
-
-                    DatePicker("Neste trekkdato", selection: $nextChargeDate, displayedComponents: .date)
-                        .environment(\.locale, Locale(identifier: "nb_NO"))
-                }
-
-                Section("Valgfritt") {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(nameOptions, id: \.self) { option in
-                                Button(action: { selectedName = option }) {
-                                    Text(option)
-                                        .font(DesignTokens.captionFont)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 8)
-                                }
-                                .buttonStyle(.bordered)
-                                .tint(selectedName == option ? .blue : .gray)
-                            }
-                        }
-                        .padding(.vertical, 4)
-                    }
-
-                    if selectedName == "Annet" {
-                        TextField("Skriv navn", text: $customName)
-                    }
-
-                    TextField("Notat (valgfritt)", text: $note)
-                }
-
-                Section("Varsler", footer: Text(footerText)) {
-                    Toggle("Varsle om trekk", isOn: $notificationsEnabled)
-                    if notificationsEnabled {
-                        Picker("Tidspunkt", selection: $reminderOffsetDays) {
-                            Text("Samme dag").tag(0)
-                            Text("1 dag før").tag(1)
-                            Text("2 dager før").tag(2)
-                        }
-                    }
-                }
-                .disabled(!store.notificationsEnabled)
-
-                Section {
-                    Toggle("Avsluttet", isOn: Binding(
-                        get: { !isActive },
-                        set: { isActive = !$0 }
-                    ))
-                }
+            List {
+                requiredSection
+                optionalSection
+                notificationSection
+                statusSection
             }
             .navigationTitle("Abonnement")
             .toolbar {
@@ -153,6 +100,72 @@ struct EditSubscriptionView: View {
 
     private var footerText: String {
         store.notificationsEnabled ? "" : "Varsler er slått av i Innstillinger."
+    }
+
+    private var requiredSection: some View {
+        Section("Obligatorisk") {
+            HStack {
+                Text("Pris per måned")
+                Spacer()
+                TextField("0", value: $price, format: .number.precision(.fractionLength(0)))
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
+                Text("kr")
+                    .foregroundStyle(DesignTokens.subtleText)
+            }
+
+            DatePicker("Neste trekkdato", selection: $nextChargeDate, displayedComponents: .date)
+                .environment(\.locale, Locale(identifier: "nb_NO"))
+        }
+    }
+
+    private var optionalSection: some View {
+        Section("Valgfritt") {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(nameOptions, id: \.self) { option in
+                        Button(action: { selectedName = option }) {
+                            Text(option)
+                                .font(DesignTokens.captionFont)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(selectedName == option ? .blue : .gray)
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+
+            if selectedName == "Annet" {
+                TextField("Skriv navn", text: $customName)
+            }
+
+            TextField("Notat (valgfritt)", text: $note)
+        }
+    }
+
+    private var notificationSection: some View {
+        Section("Varsler", footer: Text(footerText)) {
+            Toggle("Varsle om trekk", isOn: $notificationsEnabled)
+            if notificationsEnabled {
+                Picker("Tidspunkt", selection: $reminderOffsetDays) {
+                    Text("Samme dag").tag(0)
+                    Text("1 dag før").tag(1)
+                    Text("2 dager før").tag(2)
+                }
+            }
+        }
+        .disabled(!store.notificationsEnabled)
+    }
+
+    private var statusSection: some View {
+        Section {
+            Toggle("Avsluttet", isOn: Binding(
+                get: { !isActive },
+                set: { isActive = !$0 }
+            ))
+        }
     }
 }
 

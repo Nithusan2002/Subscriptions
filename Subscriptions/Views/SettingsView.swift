@@ -14,7 +14,7 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            SwiftUI.Form {
+            List {
                 Section("Varsler", footer: Text(notificationFooter)) {
                     Toggle("Varsler på denne enheten", isOn: Binding(
                         get: { store.notificationsEnabled },
