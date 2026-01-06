@@ -61,7 +61,12 @@ struct HomeView: View {
                     .environmentObject(store)
             }
             .sheet(item: $activeSheet) { sheet in
-                InfoSheetView(title: sheet.title, message: sheet.message)
+                switch sheet {
+                case .about:
+                    AboutView()
+                case .settings, .export:
+                    InfoSheetView(title: sheet.title, message: sheet.message)
+                }
             }
         }
     }
