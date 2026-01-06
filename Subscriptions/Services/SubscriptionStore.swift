@@ -18,7 +18,7 @@ final class SubscriptionStore: ObservableObject {
     @Published var feedbackMessage: String? = nil
     @Published var notificationsEnabled: Bool {
         didSet {
-            UserDefaults.standard.set(notificationsEnabled, forKey: DefaultsKey.notificationsEnabled)
+            UserDefaults.standard.set(notificationsEnabled, forKey: AppDefaults.notificationsEnabled)
             if !notificationsEnabled {
                 notificationCenter.removeAllPendingNotificationRequests()
             } else if hasNotificationAuthorization {
@@ -28,7 +28,7 @@ final class SubscriptionStore: ObservableObject {
     }
     @Published var defaultReminderOffsetDays: Int {
         didSet {
-            UserDefaults.standard.set(defaultReminderOffsetDays, forKey: DefaultsKey.defaultReminderOffsetDays)
+            UserDefaults.standard.set(defaultReminderOffsetDays, forKey: AppDefaults.defaultReminderOffsetDays)
         }
     }
 
@@ -39,9 +39,9 @@ final class SubscriptionStore: ObservableObject {
     init() {
         let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         self.storageURL = documents.appendingPathComponent("subscriptions.json")
-        let storedEnabled = UserDefaults.standard.object(forKey: DefaultsKey.notificationsEnabled) as? Bool
+        let storedEnabled = UserDefaults.standard.object(forKey: AppDefaults.notificationsEnabled) as? Bool
         self.notificationsEnabled = storedEnabled ?? true
-        let storedOffset = UserDefaults.standard.object(forKey: DefaultsKey.defaultReminderOffsetDays) as? Int
+        let storedOffset = UserDefaults.standard.object(forKey: AppDefaults.defaultReminderOffsetDays) as? Int
         self.defaultReminderOffsetDays = storedOffset ?? 1
         loadMonthlySnapshots()
         load()
@@ -63,7 +63,11 @@ final class SubscriptionStore: ObservableObject {
     }
 
     var freeLimitReached: Bool {
-        activeSubscriptions.count >= Self.maxFreeSubscriptions
+        !isPro && activeSubscriptions.count >= Self.maxFreeSubscriptions
+    }
+
+    var isPro: Bool {
+        UserDefaults.standard.bool(forKey: AppDefaults.isPro)
     }
 
     var annualEstimate: Decimal {
@@ -223,11 +227,11 @@ final class SubscriptionStore: ObservableObject {
         guard percentInt > 0 else { return }
 
         let monthKey = currentMonthKey()
-        let lastShown = UserDefaults.standard.string(forKey: DefaultsKey.lastMonthlyInsightShown)
+        let lastShown = UserDefaults.standard.string(forKey: AppDefaults.lastMonthlyInsightShown)
         guard lastShown != monthKey else { return }
 
         showFeedback("Faste kostnader ↓ \(percentInt) % siden forrige måned")
-        UserDefaults.standard.set(monthKey, forKey: DefaultsKey.lastMonthlyInsightShown)
+        UserDefaults.standard.set(monthKey, forKey: AppDefaults.lastMonthlyInsightShown)
     }
 
     private func currentMonthKey() -> String {
@@ -245,7 +249,7 @@ final class SubscriptionStore: ObservableObject {
     }
 
     private func loadMonthlySnapshots() {
-        guard let data = UserDefaults.standard.data(forKey: DefaultsKey.monthlySnapshots) else { return }
+        guard let data = UserDefaults.standard.data(forKey: AppDefaults.monthlySnapshots) else { return }
         if let decoded = try? JSONDecoder().decode([MonthlySnapshot].self, from: data) {
             monthlySnapshots = decoded
         }
@@ -253,7 +257,7 @@ final class SubscriptionStore: ObservableObject {
 
     private func saveMonthlySnapshots() {
         if let data = try? JSONEncoder().encode(monthlySnapshots) {
-            UserDefaults.standard.set(data, forKey: DefaultsKey.monthlySnapshots)
+            UserDefaults.standard.set(data, forKey: AppDefaults.monthlySnapshots)
         }
     }
 
@@ -268,9 +272,4 @@ final class SubscriptionStore: ObservableObject {
     }
 }
 
-private enum DefaultsKey {
-    static let notificationsEnabled = "notificationsEnabled"
-    static let defaultReminderOffsetDays = "defaultReminderOffsetDays"
-    static let monthlySnapshots = "monthlySnapshots"
-    static let lastMonthlyInsightShown = "lastMonthlyInsightShown"
-}
+// Uses AppDefaults keys.

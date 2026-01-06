@@ -10,11 +10,13 @@ import SwiftUI
 @main
 struct SubscriptionsApp: App {
     @StateObject private var store = SubscriptionStore()
+    @StateObject private var storeKit = StoreKitManager()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(store)
+                .environmentObject(storeKit)
         }
     }
 }

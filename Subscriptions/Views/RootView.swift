@@ -27,4 +27,5 @@ struct RootView: View {
 #Preview {
     RootView()
         .environmentObject(SubscriptionStore())
+        .environmentObject(StoreKitManager())
 }

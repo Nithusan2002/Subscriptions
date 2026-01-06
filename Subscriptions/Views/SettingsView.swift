@@ -14,6 +14,12 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
+                Section {
+                    NavigationLink("Lås opp Pro") {
+                        PaywallView()
+                    }
+                }
+
                 Section(header: Text("Varsler"), footer: Text(notificationFooter)) {
                     Toggle("Varsler på denne enheten", isOn: Binding(
                         get: { store.notificationsEnabled },
@@ -63,4 +69,5 @@ struct SettingsView: View {
 #Preview {
     SettingsView()
         .environmentObject(SubscriptionStore())
+        .environmentObject(StoreKitManager())
 }
