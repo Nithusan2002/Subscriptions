@@ -15,7 +15,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Varsler", footer: Text(notificationFooter)) {
+                Section(header: Text("Varsler"), footer: Text(notificationFooter)) {
                     Toggle("Varsler på denne enheten", isOn: Binding(
                         get: { store.notificationsEnabled },
                         set: { newValue in

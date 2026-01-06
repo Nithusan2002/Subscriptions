@@ -146,7 +146,7 @@ struct EditSubscriptionView: View {
     }
 
     private var notificationSection: some View {
-        Section("Varsler", footer: Text(footerText)) {
+        Section(header: Text("Varsler"), footer: Text(footerText)) {
             Toggle("Varsle om trekk", isOn: $notificationsEnabled)
             if notificationsEnabled {
                 Picker("Tidspunkt", selection: $reminderOffsetDays) {
