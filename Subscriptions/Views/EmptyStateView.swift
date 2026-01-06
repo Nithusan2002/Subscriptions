@@ -14,7 +14,7 @@ struct EmptyStateView: View {
         VStack(spacing: 20) {
             Text("Du har full kontroll.\nNår du legger til abonnementer, ser du nøyaktig hva de koster deg.")
                 .font(DesignTokens.bodyFont)
-                .foregroundStyle(DesignTokens.subtleText)
+                .foregroundStyle(Color.primary.opacity(0.85))
                 .multilineTextAlignment(.center)
             Button(action: onAdd) {
                 Text("Legg til abonnement")

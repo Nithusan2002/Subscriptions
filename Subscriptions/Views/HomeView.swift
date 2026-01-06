@@ -44,9 +44,11 @@ struct HomeView: View {
             }
             .animation(.easeInOut(duration: 0.2), value: store.feedbackMessage)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: { isPresentingAdd = true }) {
-                        Image(systemName: "plus")
+                if !store.activeSubscriptions.isEmpty {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(action: { isPresentingAdd = true }) {
+                            Image(systemName: "plus")
+                        }
                     }
                 }
             }
