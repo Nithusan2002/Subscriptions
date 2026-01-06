@@ -35,6 +35,14 @@ struct HomeView: View {
                 .padding(.top, 16)
             }
             .navigationTitle("Oversikt")
+            .overlay(alignment: .top) {
+                if let message = store.feedbackMessage {
+                    FeedbackToastView(message: message)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .padding(.top, 8)
+                }
+            }
+            .animation(.easeInOut(duration: 0.2), value: store.feedbackMessage)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: { isPresentingAdd = true }) {

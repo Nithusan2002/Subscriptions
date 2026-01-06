@@ -15,6 +15,7 @@ final class SubscriptionStore: ObservableObject {
 
     @Published private(set) var subscriptions: [Subscription] = []
     @Published private(set) var notificationAuthorizationStatus: UNAuthorizationStatus = .notDetermined
+    @Published var feedbackMessage: String? = nil
     @Published var notificationsEnabled: Bool {
         didSet {
             UserDefaults.standard.set(notificationsEnabled, forKey: DefaultsKey.notificationsEnabled)
@@ -83,11 +84,17 @@ final class SubscriptionStore: ObservableObject {
 
     func update(_ subscription: Subscription) {
         guard let index = subscriptions.firstIndex(where: { $0.id == subscription.id }) else { return }
+        let previous = subscriptions[index]
         var updated = subscription
         updated.updatedAt = Date()
         subscriptions[index] = updated
         save()
         scheduleIfAllowed(for: updated)
+
+        if previous.isActive && !updated.isActive {
+            let savings = Formatters.nokString(previous.priceNOK)
+            showFeedback("Du sparer \(savings) kr/mnd 🎉")
+        }
     }
 
     func requestNotificationPermission() async -> Bool {
@@ -179,6 +186,16 @@ final class SubscriptionStore: ObservableObject {
             try data.write(to: storageURL, options: [.atomic])
         } catch {
             return
+        }
+    }
+
+    private func showFeedback(_ message: String) {
+        feedbackMessage = message
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 2_200_000_000)
+            if feedbackMessage == message {
+                feedbackMessage = nil
+            }
         }
     }
 }
