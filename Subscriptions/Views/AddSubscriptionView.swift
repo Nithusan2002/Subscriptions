@@ -40,7 +40,7 @@ struct AddSubscriptionView: View {
                 Section("Valgfritt") {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
-                            ForEach(nameOptions, id: \\.self) { option in
+                            ForEach(nameOptions, id: \.self) { option in
                                 Button(action: { selectedName = option }) {
                                     Text(option)
                                         .font(DesignTokens.captionFont)
