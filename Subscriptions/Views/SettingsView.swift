@@ -47,7 +47,9 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Innstillinger")
+            .scrollContentBackground(.hidden)
         }
+        .background(DesignTokens.appBackground.ignoresSafeArea())
     }
 
     private var notificationFooter: String {

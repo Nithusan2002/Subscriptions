@@ -82,7 +82,9 @@ struct AddSubscriptionView: View {
                     .disabled((parsedPrice ?? 0) <= 0)
                 }
             }
+            .scrollContentBackground(.hidden)
         }
+        .background(DesignTokens.appBackground.ignoresSafeArea())
         .sheet(isPresented: $isPresentingPaywall) {
             PaywallView()
         }

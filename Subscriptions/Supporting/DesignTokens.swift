@@ -18,6 +18,15 @@ enum DesignTokens {
     static let cardPadding: CGFloat = 16
     static let sectionSpacing: CGFloat = 20
 
+    static let accent = Color(.systemTeal)
+    static let appBackground = LinearGradient(
+        colors: [Color(.systemGroupedBackground), Color(.secondarySystemGroupedBackground)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
     static let cardBackground = Color(.secondarySystemBackground)
+    static let cardStroke = Color(.separator).opacity(0.25)
+    static let cardShadow = Color.black.opacity(0.06)
     static let subtleText = Color(.secondaryLabel)
 }

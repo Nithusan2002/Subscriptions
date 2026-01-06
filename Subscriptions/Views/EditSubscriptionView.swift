@@ -64,7 +64,9 @@ struct EditSubscriptionView: View {
                     .disabled((parsedPrice ?? 0) <= 0)
                 }
             }
+            .scrollContentBackground(.hidden)
         }
+        .background(DesignTokens.appBackground.ignoresSafeArea())
     }
 
     private func saveSubscription() {

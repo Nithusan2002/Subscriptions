@@ -20,6 +20,7 @@ struct RootView: View {
                     Label("Innstillinger", systemImage: "gearshape")
                 }
         }
+        .tint(DesignTokens.accent)
     }
 }
 

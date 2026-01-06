@@ -59,6 +59,7 @@ struct HomeView: View {
                     .environmentObject(store)
             }
         }
+        .background(DesignTokens.appBackground.ignoresSafeArea())
     }
 
     private var heroSection: some View {

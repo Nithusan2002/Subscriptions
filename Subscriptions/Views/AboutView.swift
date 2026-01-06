@@ -15,7 +15,7 @@ struct AboutView: View {
             VStack(spacing: 16) {
                 Image(systemName: "rectangle.stack.fill")
                     .font(.system(size: 48, weight: .semibold))
-                    .foregroundStyle(.tint)
+                    .foregroundStyle(DesignTokens.accent)
 
                 Text("Abonnementer")
                     .font(DesignTokens.sectionTitleFont)
@@ -37,6 +37,7 @@ struct AboutView: View {
                 }
             }
         }
+        .background(DesignTokens.appBackground.ignoresSafeArea())
     }
 
     private var appVersionText: String {

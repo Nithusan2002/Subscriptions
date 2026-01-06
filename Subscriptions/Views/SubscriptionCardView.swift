@@ -26,6 +26,11 @@ struct SubscriptionCardView: View {
         .padding(DesignTokens.cardPadding)
         .background(DesignTokens.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: DesignTokens.cardCornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignTokens.cardCornerRadius)
+                .stroke(DesignTokens.cardStroke)
+        )
+        .shadow(color: DesignTokens.cardShadow, radius: 10, x: 0, y: 4)
     }
 
     private var displayName: String {
