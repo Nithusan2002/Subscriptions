@@ -13,4 +13,5 @@ enum AppDefaults {
     static let monthlySnapshots = "monthlySnapshots"
     static let lastMonthlyInsightShown = "lastMonthlyInsightShown"
     static let isPro = "isPro"
+    static let lastExportedAt = "lastExportedAt"
 }
