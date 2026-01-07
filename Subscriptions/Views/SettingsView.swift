@@ -15,15 +15,6 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Utseende") {
-                    Picker("Tema", selection: $colorSchemePreference) {
-                        Text("System").tag(0)
-                        Text("Lys").tag(1)
-                        Text("Mørk").tag(2)
-                    }
-                    .pickerStyle(.segmented)
-                }
-
                 Section {
                     NavigationLink("Lås opp Pro") {
                         PaywallView()
@@ -51,6 +42,15 @@ struct SettingsView: View {
                         Text("2 dager før").tag(2)
                     }
                     .disabled(!store.notificationsEnabled)
+                }
+
+                Section("Utseende") {
+                    Picker("Tema", selection: $colorSchemePreference) {
+                        Text("System").tag(0)
+                        Text("Lys").tag(1)
+                        Text("Mørk").tag(2)
+                    }
+                    .pickerStyle(.segmented)
                 }
 
                 Section("Mer") {
