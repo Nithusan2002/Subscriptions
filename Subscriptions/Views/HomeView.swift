@@ -13,6 +13,11 @@ struct HomeView: View {
     @State private var isPresentingAdd = false
     @State private var selectedSubscription: Subscription? = nil
     @AppStorage("didShowNotificationPrompt") private var didShowNotificationPrompt = false
+    @Binding var showAddFromIntro: Bool
+
+    init(showAddFromIntro: Binding<Bool> = .constant(false)) {
+        _showAddFromIntro = showAddFromIntro
+    }
 
     var body: some View {
         NavigationStack {
@@ -62,6 +67,12 @@ struct HomeView: View {
             }
         }
         .background(DesignTokens.appBackground.ignoresSafeArea())
+        .onChange(of: showAddFromIntro) { _, newValue in
+            if newValue {
+                isPresentingAdd = true
+                showAddFromIntro = false
+            }
+        }
     }
 
     private var heroSection: some View {

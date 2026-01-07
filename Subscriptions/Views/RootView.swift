@@ -8,9 +8,11 @@
 import SwiftUI
 
 struct RootView: View {
+    @Binding var showAddFromIntro: Bool
+
     var body: some View {
         TabView {
-            HomeView()
+            HomeView(showAddFromIntro: $showAddFromIntro)
                 .tabItem {
                     Label("Oversikt", systemImage: "rectangle.stack")
                 }
@@ -25,7 +27,7 @@ struct RootView: View {
 }
 
 #Preview {
-    RootView()
+    RootView(showAddFromIntro: .constant(false))
         .environmentObject(SubscriptionStore())
         .environmentObject(StoreKitManager())
 }
