@@ -15,4 +15,5 @@ enum AppDefaults {
     static let isPro = "isPro"
     static let lastExportedAt = "lastExportedAt"
     static let didShowIntro = "didShowIntro"
+    static let colorSchemePreference = "colorSchemePreference"
 }

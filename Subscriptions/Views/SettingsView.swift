@@ -10,10 +10,20 @@ import UserNotifications
 
 struct SettingsView: View {
     @EnvironmentObject var store: SubscriptionStore
+    @AppStorage(AppDefaults.colorSchemePreference) private var colorSchemePreference = 0
 
     var body: some View {
         NavigationStack {
             List {
+                Section("Utseende") {
+                    Picker("Tema", selection: $colorSchemePreference) {
+                        Text("System").tag(0)
+                        Text("Lys").tag(1)
+                        Text("Mørk").tag(2)
+                    }
+                    .pickerStyle(.segmented)
+                }
+
                 Section {
                     NavigationLink("Lås opp Pro") {
                         PaywallView()

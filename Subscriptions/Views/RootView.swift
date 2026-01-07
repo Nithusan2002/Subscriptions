@@ -9,6 +9,7 @@ import SwiftUI
 
 struct RootView: View {
     @Binding var showAddFromIntro: Bool
+    @AppStorage(AppDefaults.colorSchemePreference) private var colorSchemePreference = 0
 
     var body: some View {
         TabView {
@@ -23,6 +24,18 @@ struct RootView: View {
                 }
         }
         .tint(DesignTokens.accent)
+        .preferredColorScheme(preferredColorScheme)
+    }
+
+    private var preferredColorScheme: ColorScheme? {
+        switch colorSchemePreference {
+        case 1:
+            return .light
+        case 2:
+            return .dark
+        default:
+            return nil
+        }
     }
 }
 
