@@ -23,7 +23,9 @@ struct HomeView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignTokens.sectionSpacing) {
-                    if store.activeSubscriptions.isEmpty {
+                    if store.isLoading {
+                        loadingSection
+                    } else if store.activeSubscriptions.isEmpty {
                         EmptyStateView(onAdd: { isPresentingAdd = true })
                     } else {
                         heroSection
@@ -96,6 +98,18 @@ struct HomeView: View {
                 .buttonStyle(.plain)
             }
         }
+    }
+
+    private var loadingSection: some View {
+        VStack(spacing: 12) {
+            ProgressView()
+                .controlSize(.large)
+            Text("Henter oversikt…")
+                .font(DesignTokens.captionFont)
+                .foregroundStyle(DesignTokens.subtleText)
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.vertical, 40)
     }
 
     private var shouldShowNotificationPrompt: Bool {

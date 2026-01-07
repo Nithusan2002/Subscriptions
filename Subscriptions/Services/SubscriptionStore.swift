@@ -16,6 +16,7 @@ final class SubscriptionStore: ObservableObject {
     @Published private(set) var subscriptions: [Subscription] = []
     @Published private(set) var notificationAuthorizationStatus: UNAuthorizationStatus = .notDetermined
     @Published var feedbackMessage: String? = nil
+    @Published private(set) var isLoading = true
     @Published var notificationsEnabled: Bool {
         didSet {
             UserDefaults.standard.set(notificationsEnabled, forKey: AppDefaults.notificationsEnabled)
@@ -48,6 +49,7 @@ final class SubscriptionStore: ObservableObject {
         Task {
             await refreshAuthorizationStatus()
         }
+        isLoading = false
     }
 
     var activeSubscriptions: [Subscription] {
