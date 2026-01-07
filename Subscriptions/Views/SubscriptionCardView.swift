@@ -14,14 +14,21 @@ struct SubscriptionCardView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(displayName)
-                    .font(DesignTokens.sectionTitleFont)
+                    .font(.system(size: 18, weight: .semibold, design: .rounded))
                 Spacer()
                 Text("\(Formatters.nokString(subscription.priceNOK)) kr/mnd")
-                    .font(DesignTokens.bodyFont)
+                    .font(.system(size: 16, weight: .regular, design: .rounded))
             }
-            Text("Neste trekk: \(Formatters.dateShort.string(from: subscription.nextChargeDate))")
+            Text("Neste trekk \(Formatters.dateShortMonth.string(from: subscription.nextChargeDate))")
                 .font(DesignTokens.captionFont)
-                .foregroundStyle(DesignTokens.subtleText)
+                .foregroundStyle(Color.secondary)
+                .padding(.top, 2)
+            if let note = trimmedNote, !note.isEmpty {
+                Text(note)
+                    .font(DesignTokens.captionFont)
+                    .foregroundStyle(Color.secondary)
+                    .lineLimit(1)
+            }
         }
         .padding(DesignTokens.cardPadding)
         .background(DesignTokens.cardBackground)
@@ -31,11 +38,29 @@ struct SubscriptionCardView: View {
                 .stroke(DesignTokens.cardStroke)
         )
         .shadow(color: DesignTokens.cardShadow, radius: 10, x: 0, y: 4)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(displayName)
+        .accessibilityValue(accessibilityValue)
     }
 
     private var displayName: String {
         let trimmed = subscription.name?.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed?.isEmpty == false ? trimmed! : "Abonnement"
+    }
+
+    private var trimmedNote: String? {
+        subscription.note?.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var accessibilityValue: String {
+        var parts = [
+            "\(Formatters.nokString(subscription.priceNOK)) kroner per måned",
+            "Neste trekk \(Formatters.dateShortMonth.string(from: subscription.nextChargeDate))"
+        ]
+        if let note = trimmedNote, !note.isEmpty {
+            parts.append("Notat: \(note)")
+        }
+        return parts.joined(separator: ". ")
     }
 }
 

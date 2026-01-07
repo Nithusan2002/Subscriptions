@@ -21,13 +21,24 @@ struct EditSubscriptionView: View {
     @State private var reminderOffsetDays: Int
 
     private let subscriptionID: UUID
-    private let nameOptions = ["Netflix", "Spotify", "HBO Max", "Apple One", "Strim", "Viaplay", "Annet"]
+    private let popularOptions: [ChipOption] = [
+        ChipOption(title: "Netflix", systemImage: "play.circle.fill"),
+        ChipOption(title: "Spotify", systemImage: "play.circle.fill"),
+        ChipOption(title: "Strim", systemImage: "play.circle.fill"),
+        ChipOption(title: "Amazon Prime", systemImage: "play.circle.fill"),
+        ChipOption(title: "Viaplay", systemImage: "play.circle.fill"),
+        ChipOption(title: "Disney+", systemImage: "play.circle.fill")
+    ]
+    private let otherOptions: [ChipOption] = [
+        ChipOption(title: "Annet", systemImage: "square.and.pencil")
+    ]
 
     init(subscription: Subscription) {
         subscriptionID = subscription.id
         _priceText = State(initialValue: Formatters.nokString(subscription.priceNOK))
         _nextChargeDate = State(initialValue: subscription.nextChargeDate)
-        if let name = subscription.name, nameOptions.contains(name) {
+        let allOptions = popularOptions.map { $0.title } + otherOptions.map { $0.title }
+        if let name = subscription.name, allOptions.contains(name) {
             _selectedName = State(initialValue: name)
             _customName = State(initialValue: "")
         } else if let name = subscription.name, !name.isEmpty {
@@ -113,8 +124,10 @@ struct EditSubscriptionView: View {
                 TextField("0", text: $priceText)
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.trailing)
+                    .accessibilityLabel("Pris per måned i kroner")
                 Text("kr")
                     .foregroundStyle(DesignTokens.subtleText)
+                    .accessibilityHidden(true)
             }
             .onChange(of: priceText) { _, newValue in
                 priceText = formattedDigits(from: newValue)
@@ -126,18 +139,31 @@ struct EditSubscriptionView: View {
     }
 
     private var optionalSection: some View {
-        Section("Valgfritt") {
+        Section {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ForEach(nameOptions, id: \.self) { option in
-                        Button(action: { selectedName = option }) {
-                            Text(option)
-                                .font(DesignTokens.captionFont)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                        }
-                        .buttonStyle(.bordered)
-                        .tint(selectedName == option ? .blue : .gray)
+                    ForEach(popularOptions, id: \.title) { option in
+                        ChipButton(
+                            title: option.title,
+                            systemImage: option.systemImage,
+                            isSelected: selectedName == option.title,
+                            accessibilityHint: "Velg hurtignavn",
+                            action: { selectedName = option.title }
+                        )
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(otherOptions, id: \.title) { option in
+                        ChipButton(
+                            title: option.title,
+                            systemImage: option.systemImage,
+                            isSelected: selectedName == option.title,
+                            accessibilityHint: "Åpner fritekstfelt",
+                            action: { selectedName = option.title }
+                        )
                     }
                 }
                 .padding(.vertical, 4)
@@ -148,6 +174,12 @@ struct EditSubscriptionView: View {
             }
 
             TextField("Notat (valgfritt)", text: $note)
+                .onChange(of: note) { _, newValue in
+                    if newValue.count > 30 {
+                        note = String(newValue.prefix(30))
+                    }
+                }
+                .accessibilityHint("Vises på abonnementskortet")
         }
     }
 
@@ -186,6 +218,11 @@ struct EditSubscriptionView: View {
         let number = NSDecimalNumber(string: digits)
         return Formatters.nokNumber.string(from: number) ?? digits
     }
+}
+
+private struct ChipOption {
+    let title: String
+    let systemImage: String
 }
 
 #Preview {

@@ -56,6 +56,10 @@ struct HomeView: View {
                         Button(action: { isPresentingAdd = true }) {
                             Image(systemName: "plus")
                         }
+                        .tint(DesignTokens.accent)
+                        .opacity(0.9)
+                        .accessibilityLabel("Legg til abonnement")
+                        .accessibilityHint("Åpner nytt abonnement")
                     }
                 }
             }
@@ -82,11 +86,18 @@ struct HomeView: View {
             Text("\(Formatters.nokString(store.totalPerMonth)) kr / mnd")
                 .font(DesignTokens.heroFont)
             Text("≈ \(Formatters.nokString(store.annualEstimate)) kr per år")
-                .font(DesignTokens.heroSubFont)
-                .foregroundStyle(DesignTokens.subtleText)
+                .font(DesignTokens.captionFont)
+                .foregroundStyle(Color.secondary)
         }
-        .frame(maxWidth: .infinity, alignment: .center)
-        .multilineTextAlignment(.center)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 26)
+        .background(DesignTokens.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.cardCornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignTokens.cardCornerRadius)
+                .stroke(DesignTokens.cardStroke)
+        )
+        .shadow(color: DesignTokens.cardShadow, radius: 10, x: 0, y: 4)
     }
 
     private var subscriptionsSection: some View {
@@ -104,6 +115,7 @@ struct HomeView: View {
         VStack(spacing: 12) {
             ProgressView()
                 .controlSize(.large)
+                .accessibilityLabel("Laster oversikt")
             Text("Henter oversikt…")
                 .font(DesignTokens.captionFont)
                 .foregroundStyle(DesignTokens.subtleText)

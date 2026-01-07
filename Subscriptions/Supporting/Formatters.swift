@@ -36,4 +36,11 @@ enum Formatters {
         formatter.dateStyle = .medium
         return formatter
     }()
+
+    static let dateShortMonth: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "nb_NO")
+        formatter.dateFormat = "d. MMM"
+        return formatter
+    }()
 }
